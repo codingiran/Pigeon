@@ -11,32 +11,28 @@ import Foundation
 
 import WatchConnectivity
 
-@available(iOS 13.0, watchOS 6.0, *)
-class SessionMessageTransiting: FileTransiting {
-    private var session: WCSession?
+@available(iOS 11.0, watchOS 4.0, *)
+class SessionMessageTransiting: Transiting {
+    private var session = WCSession.default
 
-    required init(applicationGroupIdentifier: String, optionalDirectory: String?) {
-        super.init(applicationGroupIdentifier: applicationGroupIdentifier, optionalDirectory: optionalDirectory)
-        self.session = WCSession.default
-        guard let _ = session?.delegate else {
-            assertionFailure("Pigeon: WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
-            return
-        }
+    required init() {
+        assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
     }
 
-    override func writeMessageObject(_ messageObject: Pigeon.Message, for identifier: String) throws {
-        let data = try NSKeyedArchiver.archivedData(withRootObject: messageObject, requiringSecureCoding: false)
-        guard let session = self.session, session.isReachable else {
+    func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws {
+        guard let object, !identifier.isEmpty else { return }
+        let data = try object.messageData
+        guard session.isReachable else {
             throw Pigeon.Error.sessionUnReachable
         }
         session.sendMessage([identifier: data], replyHandler: nil)
     }
 
-    override func messageObjectForIdentifier(_ identifier: String) throws -> Pigeon.Message? { nil }
+    func message<M>(of type: M.Type, for identifier: Identifier) throws -> M? where M: Messaging { nil }
 
-    override func deleteContentForAllMessages() throws {}
+    func deleteContentForAllMessages() throws {}
 
-    override func deleteContentForIdentifier(_ identifier: String) throws {}
+    func deleteContent(for identifier: Identifier) throws {}
 }
 
 #endif

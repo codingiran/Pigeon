@@ -8,17 +8,19 @@
 import Foundation
 
 class FileTransiting: Transiting {
-    var applicationGroupIdentifier: String
     var optionalDirectory: String?
+    var applicationGroupContainerURL: URL?
     let fileManager = FileManager.default
 
     required init(applicationGroupIdentifier: String, optionalDirectory: String?) {
-        self.applicationGroupIdentifier = applicationGroupIdentifier
         self.optionalDirectory = optionalDirectory
-        checkAppGroupCapabilities()
+        self.applicationGroupContainerURL = fileManager.containerURL(forSecurityApplicationGroupIdentifier: applicationGroupIdentifier)
+        if applicationGroupContainerURL == nil {
+            assertionFailure("App Group Capabilities may not be correctly configured for your project, or your appGroupIdentifier may not match your project settings. Check Project->Capabilities->App Groups. Three checkmarks should be displayed in the steps section, and the value passed in for your appGroupIdentifier should match the setting in your project file.")
+        }
     }
 
-    func fileURLForIdentifier(_ identifier: String) throws -> URL {
+    func fileURLForIdentifier(_ identifier: Identifier) throws -> URL {
         let directoryURL = try messagePassingDirectoryURL()
         let fileName = identifier + ".archive"
         let fileURL = directoryURL.appendingPath(fileName)
@@ -26,10 +28,10 @@ class FileTransiting: Transiting {
     }
 
     func messagePassingDirectoryURL() throws -> URL {
-        guard let appGroupContainer = fileManager.containerURL(forSecurityApplicationGroupIdentifier: applicationGroupIdentifier) else {
+        guard let applicationGroupContainerURL = applicationGroupContainerURL else {
             throw Pigeon.Error.applicationGroupIdentifierNotConfigured
         }
-        var directoryURL = appGroupContainer
+        var directoryURL = applicationGroupContainerURL
         if let optionalDirectory = optionalDirectory {
             directoryURL = directoryURL.appendingPath(optionalDirectory)
         }
@@ -39,20 +41,21 @@ class FileTransiting: Transiting {
         return directoryURL
     }
 
-    func writeMessageObject(_ messageObject: Pigeon.Message, for identifier: String) throws {
-        let data = try NSKeyedArchiver.archivedData(withRootObject: messageObject, requiringSecureCoding: false)
+    func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws {
+        guard let object, !identifier.isEmpty else { return }
+        let data = try object.messageData
         let fileURL = try fileURLForIdentifier(identifier)
         try data.write(to: fileURL, options: .atomic)
     }
 
-    func messageObjectForIdentifier(_ identifier: String) throws -> Pigeon.Message? {
+    func message<M>(of type: M.Type, for identifier: Identifier) throws -> M? where M : Messaging {
         let fileURL = try fileURLForIdentifier(identifier)
         let data = try Data(contentsOf: fileURL)
-        let messageObject = NSKeyedUnarchiver.unarchiveObject(with: data)
-        return messageObject as? Pigeon.Message
+        let messageObject = try M(messageData: data)
+        return messageObject
     }
 
-    func deleteContentForIdentifier(_ identifier: String) throws {
+    func deleteContent(for identifier: Identifier) throws {
         let fileURL = try fileURLForIdentifier(identifier)
         try fileManager.removeItem(at: fileURL)
     }
@@ -66,17 +69,6 @@ class FileTransiting: Transiting {
         for message in messageFiles {
             let messageURL = directoryURL.appendingPath(message)
             try fileManager.removeItem(at: messageURL)
-        }
-    }
-}
-
-// MARK: - Check App Group Capabilities
-
-private extension FileTransiting {
-    func checkAppGroupCapabilities() {
-        guard let _ = fileManager.containerURL(forSecurityApplicationGroupIdentifier: applicationGroupIdentifier) else {
-            assertionFailure("App Group Capabilities may not be correctly configured for your project, or your appGroupIdentifier may not match your project settings. Check Project->Capabilities->App Groups. Three checkmarks should be displayed in the steps section, and the value passed in for your appGroupIdentifier should match the setting in your project file.")
-            return
         }
     }
 }

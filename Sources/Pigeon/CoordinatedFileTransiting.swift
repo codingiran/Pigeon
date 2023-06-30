@@ -8,8 +8,9 @@
 import Foundation
 
 class CoordinatedFileTransiting: FileTransiting {
-    override func writeMessageObject(_ messageObject: Pigeon.Message, for identifier: String) throws {
-        let data = try NSKeyedArchiver.archivedData(withRootObject: messageObject, requiringSecureCoding: false)
+    override func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws {
+        guard let object, !identifier.isEmpty else { return }
+        let data = try object.messageData
         let fileURL = try fileURLForIdentifier(identifier)
         let fileCoordinator = NSFileCoordinator(filePresenter: nil)
         var nserror: NSError?
@@ -30,7 +31,7 @@ class CoordinatedFileTransiting: FileTransiting {
         }
     }
 
-    override func messageObjectForIdentifier(_ identifier: String) throws -> Pigeon.Message? {
+    override func message<M>(of type: M.Type, for identifier: Identifier) throws -> M? where M : Messaging {
         let fileURL = try fileURLForIdentifier(identifier)
         let fileCoordinator = NSFileCoordinator(filePresenter: nil)
         var nserror: NSError?
@@ -50,9 +51,10 @@ class CoordinatedFileTransiting: FileTransiting {
         if let errorToThrow {
             throw Pigeon.Error.fileCoordinatorFailed(errorToThrow.localizedDescription)
         }
-        guard let data, let messageObject = NSKeyedUnarchiver.unarchiveObject(with: data) as? Pigeon.Message else {
+        guard let data else {
             return nil
         }
+        let messageObject = try M(messageData: data)
         return messageObject
     }
 }

@@ -10,12 +10,15 @@ import Foundation
 public extension Pigeon {
     enum Error: Swift.Error {
         case applicationGroupIdentifierNotConfigured
+        case messageIdentifierInvalid
         case sessionUnReachable
         case fileCoordinatorFailed(String)
         var localizedDescription: String {
             switch self {
             case .applicationGroupIdentifierNotConfigured:
                 return "ApplicationGroupIdentifier is not configured"
+            case .messageIdentifierInvalid:
+                return "Message idetifier is empty or invalid"
             case .sessionUnReachable:
                 return "WCSession is unreachable"
             case .fileCoordinatorFailed(let error):
@@ -48,4 +51,8 @@ public extension FileManager {
         let path = url.filePath
         return self.fileExists(atPath: path)
     }
+}
+
+public extension Identifier {
+    var notificationName: CFNotificationName { CFNotificationName(self as CFString) }
 }

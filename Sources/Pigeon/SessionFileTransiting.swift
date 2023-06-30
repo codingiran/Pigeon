@@ -11,22 +11,22 @@ import Foundation
 
 import WatchConnectivity
 
-@available(iOS 13.0, watchOS 6.0, *)
+@available(iOS 11.0, watchOS 4.0, *)
 class SessionFileTransiting: FileTransiting {
-    private var session: WCSession?
+    private let session = WCSession.default
 
     required init(applicationGroupIdentifier: String, optionalDirectory: String?) {
         super.init(applicationGroupIdentifier: applicationGroupIdentifier, optionalDirectory: optionalDirectory)
-        self.session = WCSession.default
-        guard let _ = session?.delegate else {
-            assertionFailure("Pigeon: WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole usin g the MMWormholeSessionTransiting classes.")
-            return
-        }
+        assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
     }
 
-    override func writeMessageObject(_ messageObject: Pigeon.Message, for identifier: String) throws {
-        let data = try NSKeyedArchiver.archivedData(withRootObject: messageObject, requiringSecureCoding: false)
-        guard let session = session, session.isReachable else {
+    override func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws {
+        guard let object else { return }
+        if identifier.isEmpty {
+            throw Pigeon.Error.messageIdentifierInvalid
+        }
+        let data = try object.messageData
+        guard session.isReachable else {
             throw Pigeon.Error.sessionUnReachable
         }
         var tempDir = try messagePassingDirectoryURL()

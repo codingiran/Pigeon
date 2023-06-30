@@ -8,12 +8,8 @@
 import Foundation
 
 public protocol Transiting {
-    func writeMessageObject(_ messageObject: Pigeon.Message, for identifier: String) throws
-    func messageObjectForIdentifier(_ identifier: String) throws -> Pigeon.Message?
-    func deleteContentForIdentifier(_ identifier: String) throws
+    func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws
+    func message<M>(of type: M.Type, for identifier: Identifier) throws -> M? where M: Messaging
+    func deleteContent(for identifier: Identifier) throws
     func deleteContentForAllMessages() throws
-}
-
-public protocol TransitingDelegate {
-    func notifyListenerForMessage(_ message: Pigeon.Message?, withIdentifier identifier: String)
 }

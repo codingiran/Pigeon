@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "scfnotification",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/p-x9/SCFNotification.git",
+      "state" : {
+        "revision" : "39215e06f50ee15d426faa636c498e0f201b81ec",
+        "version" : "0.0.6"
+      }
+    }
+  ],
+  "version" : 2
+}
