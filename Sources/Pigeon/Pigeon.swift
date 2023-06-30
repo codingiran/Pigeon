@@ -17,9 +17,9 @@ import SCFNotification
 /// Current Pigeon version. Necessary since SPM doesn't use dynamic libraries. Plus this will be more accurate.
 let version = "0.0.1"
 
+public typealias Messaging = Any
 public typealias Identifier = String
-public typealias Listener = (Pigeon, Identifier?) -> Void
-public typealias MessageListener<M> = (Pigeon, Identifier, M?) -> Void where M: Messaging
+public typealias Listener = (Pigeon, Any?) -> Void
 
 open class Pigeon {
     public enum TransitingType {
@@ -40,7 +40,7 @@ open class Pigeon {
 
     public var messenger: Transiting?
 
-    public init(applicationGroupIdentifier: String, optionalDirectory: String? = nil, transitingType: TransitingType = .file) {
+    public init(applicationGroupIdentifier: String, optionalDirectory: String? = "Pigeon", transitingType: TransitingType = .file) {
         self.applicationGroupIdentifier = applicationGroupIdentifier
         self.optionalDirectory = optionalDirectory
         switch transitingType {
@@ -78,20 +78,16 @@ open class Pigeon {
 
 public extension Pigeon {
     func passMessage(_ message: Messaging?, for identifier: Identifier) throws {
-        try self.messenger?.writeMessageObject(message, for: identifier)
+        try self.messenger?.writeMessage(message, for: identifier)
         sendNotificationForMessage(for: identifier)
     }
 
-    func message<M>(of type: M.Type, for identifier: Identifier) throws -> M? where M: Messaging {
-        let messageObject = try self.messenger?.message(of: M.self, for: identifier)
+    func message(for identifier: Identifier) throws -> Any? {
+        let messageObject = try self.messenger?.message(for: identifier)
         return messageObject
     }
 
-    func listenMessage<M>(for identifier: Identifier, listener: MessageListener<M>?) where M: Messaging {
-        registerNotifications(for: identifier, listener: listener)
-    }
-
-    func listen(for identifier: Identifier, listener: Listener?) {
+    func listenMessage(for identifier: Identifier, listener: Listener?) {
         registerNotifications(for: identifier, listener: listener)
     }
 
@@ -116,24 +112,16 @@ private extension Pigeon {
         self.darwinNotificationCenter.postNotification(name: identifier.notificationName, userInfo: userInfo, deliverImmediately: true)
     }
 
-    func registerNotifications<M>(for identifier: Identifier, listener: MessageListener<M>?) where M: Messaging {
-        self.unregisterNotifications(for: identifier)
-        self.darwinNotificationCenter.addObserver(observer: self, name: identifier.notificationName, suspensionBehavior: .deliverImmediately) { [weak self] _, _, name, _, _ in
-            guard let self, let identifier = name?.rawValue as? String else { return }
-            do {
-                let message = try self.messenger?.message(of: M.self, for: identifier)
-                listener?(self, identifier, message)
-            } catch {
-                listener?(self, identifier, nil)
-            }
-        }
-    }
-
     func registerNotifications(for identifier: Identifier, listener: Listener?) {
         self.unregisterNotifications(for: identifier)
         self.darwinNotificationCenter.addObserver(observer: self, name: identifier.notificationName, suspensionBehavior: .deliverImmediately) { [weak self] _, _, name, _, _ in
             guard let self, let identifier = name?.rawValue as? String else { return }
-            listener?(self, identifier)
+            do {
+                let message = try self.messenger?.message(for: identifier)
+                listener?(self, message)
+            } catch {
+                listener?(self, nil)
+            }
         }
     }
 

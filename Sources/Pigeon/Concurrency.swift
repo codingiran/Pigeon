@@ -11,18 +11,10 @@ import Foundation
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 public extension Pigeon {
-    func listenMessage<M>(of type: M.Type, for identifier: Identifier) async -> M? where M: Messaging {
+    func listenMessage(for identifier: Identifier) async -> Messaging? {
         return await withCheckedContinuation { cont in
-            self.listenMessage(for: identifier) { _, _, message in
+            self.listenMessage(for: identifier) { _, message in
                 cont.resume(returning: message)
-            }
-        }
-    }
-
-    func listen(for identifier: Identifier) async {
-        await withCheckedContinuation { cont in
-            self.listen(for: identifier) { _, _ in
-                cont.resume()
             }
         }
     }

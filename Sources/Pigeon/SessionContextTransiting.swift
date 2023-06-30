@@ -20,9 +20,9 @@ class SessionContextTransiting: Transiting {
         assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
     }
 
-    func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws {
-        guard let object, !identifier.isEmpty else { return }
-        let data = try object.messageData
+    func writeMessage(_ message: Messaging?, for identifier: Identifier) throws {
+        guard let message, !identifier.isEmpty else { return }
+        let data = try NSKeyedArchiver.archivedData(withRootObject: message, requiringSecureCoding: false)
         var currentContext = session.applicationContext
         if let lastContext = lastContext {
             currentContext = currentContext.merging(lastContext) { $1 }
@@ -32,12 +32,12 @@ class SessionContextTransiting: Transiting {
         try session.updateApplicationContext(currentContext)
     }
 
-    func message<M>(of type: M.Type, for identifier: Identifier) throws -> M? where M: Messaging {
+    func message(for identifier: Identifier) throws -> Messaging? {
         guard let data = (session.receivedApplicationContext[identifier] ?? session.applicationContext[identifier]) as? Data else {
             return nil
         }
-        let messageObject = try M(messageData: data)
-        return messageObject
+        let message = NSKeyedUnarchiver.unarchiveObject(with: data)
+        return message
     }
 
     func deleteContent(for identifier: Identifier) throws {

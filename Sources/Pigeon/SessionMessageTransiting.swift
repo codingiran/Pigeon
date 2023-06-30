@@ -19,16 +19,16 @@ class SessionMessageTransiting: Transiting {
         assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
     }
 
-    func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws {
-        guard let object, !identifier.isEmpty else { return }
-        let data = try object.messageData
+    func writeMessage(_ message: Messaging?, for identifier: Identifier) throws {
+        guard let message, !identifier.isEmpty else { return }
+        let data = try NSKeyedArchiver.archivedData(withRootObject: message, requiringSecureCoding: false)
         guard session.isReachable else {
             throw Pigeon.Error.sessionUnReachable
         }
         session.sendMessage([identifier: data], replyHandler: nil)
     }
 
-    func message<M>(of type: M.Type, for identifier: Identifier) throws -> M? where M: Messaging { nil }
+    func message(for identifier: Identifier) throws -> Messaging? { nil }
 
     func deleteContentForAllMessages() throws {}
 

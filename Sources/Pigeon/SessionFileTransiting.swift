@@ -20,12 +20,12 @@ class SessionFileTransiting: FileTransiting {
         assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
     }
 
-    override func writeMessageObject(_ object: Messaging?, for identifier: Identifier) throws {
-        guard let object else { return }
+    override func writeMessage(_ message: Messaging?, for identifier: Identifier) throws {
+        guard let message else { return }
         if identifier.isEmpty {
             throw Pigeon.Error.messageIdentifierInvalid
         }
-        let data = try object.messageData
+        let data = try NSKeyedArchiver.archivedData(withRootObject: message, requiringSecureCoding: false)
         guard session.isReachable else {
             throw Pigeon.Error.sessionUnReachable
         }
