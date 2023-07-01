@@ -16,7 +16,7 @@ class SessionMessageTransiting: Transiting {
     private var session = WCSession.default
 
     required init() {
-        assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
+        assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the SessionListener shared object prior to creating a separate pigeon using the SessionMessageTransiting classes.")
     }
 
     func writeMessage(_ message: Messaging?, for identifier: Identifier) throws {

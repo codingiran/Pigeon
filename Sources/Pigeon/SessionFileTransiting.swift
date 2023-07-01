@@ -17,7 +17,7 @@ class SessionFileTransiting: FileTransiting {
 
     required init(applicationGroupIdentifier: String, optionalDirectory: String?) {
         super.init(applicationGroupIdentifier: applicationGroupIdentifier, optionalDirectory: optionalDirectory)
-        assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the MMWormholeSession sharedListeningSession object prior to creating a separate wormhole using the MMWormholeSessionTransiting classes.")
+        assert(session.delegate != nil, "WCSession's delegate is required to be set before you can send messages. Please initialize the SessionListener shared object prior to creating a separate pigeon using the SessionFileTransiting classes.")
     }
 
     override func writeMessage(_ message: Messaging?, for identifier: Identifier) throws {

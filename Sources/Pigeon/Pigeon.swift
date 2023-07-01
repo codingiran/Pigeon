@@ -15,11 +15,13 @@ import SCFNotification
 #endif
 
 /// Current Pigeon version. Necessary since SPM doesn't use dynamic libraries. Plus this will be more accurate.
-let version = "0.0.1"
+let version = "0.0.2"
 
 public typealias Messaging = Any
 public typealias Identifier = String
-public typealias Listener = (Pigeon, Any?) -> Void
+public typealias ReplyHandler = (Messaging?) -> Void
+public typealias ReplyAction = (Messaging?) throws -> Void
+public typealias Listener = (Messaging?, @escaping ReplyAction) -> Void
 
 open class Pigeon {
     public enum TransitingType {
@@ -77,12 +79,17 @@ open class Pigeon {
 // MARK: - Public methods
 
 public extension Pigeon {
-    func passMessage(_ message: Messaging?, for identifier: Identifier) throws {
+    func passMessage(_ message: Messaging?, for identifier: Identifier, replyHandler: ReplyHandler? = nil) throws {
         try self.messenger?.writeMessage(message, for: identifier)
-        sendNotificationForMessage(for: identifier)
+        sendNotification(for: identifier)
+        if let replyHandler {
+            self.listenMessage(for: identifier.replied) { message, _ in
+                replyHandler(message)
+            }
+        }
     }
 
-    func message(for identifier: Identifier) throws -> Any? {
+    func message(for identifier: Identifier) throws -> Messaging? {
         let messageObject = try self.messenger?.message(for: identifier)
         return messageObject
     }
@@ -107,7 +114,7 @@ public extension Pigeon {
 // MARK: - Private methods
 
 private extension Pigeon {
-    func sendNotificationForMessage(for identifier: Identifier) {
+    func sendNotification(for identifier: Identifier) {
         let userInfo = [String: Any]() as CFDictionary
         self.darwinNotificationCenter.postNotification(name: identifier.notificationName, userInfo: userInfo, deliverImmediately: true)
     }
@@ -116,16 +123,19 @@ private extension Pigeon {
         self.unregisterNotifications(for: identifier)
         self.darwinNotificationCenter.addObserver(observer: self, name: identifier.notificationName, suspensionBehavior: .deliverImmediately) { [weak self] _, _, name, _, _ in
             guard let self, let identifier = name?.rawValue as? String else { return }
-            do {
-                let message = try self.messenger?.message(for: identifier)
-                listener?(self, message)
-            } catch {
-                listener?(self, nil)
-            }
+            let replyAction = self.replyAction(for: identifier)
+            let message = try? self.messenger?.message(for: identifier)
+            listener?(message, replyAction)
         }
     }
 
     func unregisterNotifications(for identifier: Identifier) {
         self.darwinNotificationCenter.removeObserver(observer: self, name: identifier.notificationName)
+    }
+
+    func replyAction(for identifier: Identifier) -> ReplyAction {
+        return { [weak self] reply in
+            try self?.passMessage(reply, for: identifier.replied)
+        }
     }
 }

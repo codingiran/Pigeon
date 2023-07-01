@@ -55,4 +55,5 @@ public extension FileManager {
 
 public extension Identifier {
     var notificationName: CFNotificationName { CFNotificationName(self as CFString) }
+    var replied: Identifier { self + "_pigeon_replied" }
 }
