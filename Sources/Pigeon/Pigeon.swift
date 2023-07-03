@@ -15,7 +15,7 @@ import SCFNotification
 #endif
 
 /// Current Pigeon version. Necessary since SPM doesn't use dynamic libraries. Plus this will be more accurate.
-let version = "0.0.2"
+let version = "0.0.3"
 
 public typealias Messaging = Any
 public typealias Identifier = String
