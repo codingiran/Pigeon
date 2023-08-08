@@ -28,7 +28,12 @@ public extension Pigeon {
     }
 }
 
-public extension URL {
+public extension Identifier {
+    var notificationName: CFNotificationName { CFNotificationName(self as CFString) }
+    var replied: Identifier { self + "_pigeon_replied" }
+}
+
+extension URL {
     var filePath: String {
         if #available(macOS 13.0, iOS 16.0, tvOS 16.0, *) {
             return self.path()
@@ -46,14 +51,9 @@ public extension URL {
     }
 }
 
-public extension FileManager {
+extension FileManager {
     func fileExists(at url: URL) -> Bool {
         let path = url.filePath
         return self.fileExists(atPath: path)
     }
-}
-
-public extension Identifier {
-    var notificationName: CFNotificationName { CFNotificationName(self as CFString) }
-    var replied: Identifier { self + "_pigeon_replied" }
 }
