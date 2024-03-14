@@ -29,5 +29,6 @@ let package = Package(
             dependencies: [
                 .product(name: "SCFNotification", package: "SCFNotification"),
             ],
-            path: "Sources"),
+            path: "Sources",
+            resources: [.copy("Resources/PrivacyInfo.xcprivacy")]),
     ])
