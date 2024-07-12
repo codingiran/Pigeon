@@ -8,12 +8,13 @@
 import Foundation
 
 public extension Pigeon {
-    enum Error: Swift.Error {
+    enum Error: LocalizedError {
         case applicationGroupIdentifierNotConfigured
         case messageIdentifierInvalid
         case sessionUnReachable
         case fileCoordinatorFailed(String)
-        var localizedDescription: String {
+
+        public var errorDescription: String? {
             switch self {
             case .applicationGroupIdentifierNotConfigured:
                 return "ApplicationGroupIdentifier is not configured"
