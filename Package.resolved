@@ -1,4 +1,5 @@
 {
+  "originHash" : "00e90800a623268aa03c86f7106a06addfb6faf8818635d0c8975ec5ecfb4071",
   "pins" : [
     {
       "identity" : "scfnotification",
@@ -10,5 +11,5 @@
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }
