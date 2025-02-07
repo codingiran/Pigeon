@@ -5,26 +5,25 @@
 //  Created by CodingIran on 2023/6/27.
 //
 
-import CoreFoundation
 import Foundation
-import SCFNotification
+private import SCFNotification
 
 // Enforce minimum Swift version for all platforms and build systems.
 #if swift(<5.5)
 #error("Pigeon doesn't support Swift versions below 5.5.")
 #endif
 
-/// Current Pigeon version 0.0.7. Necessary since SPM doesn't use dynamic libraries. Plus this will be more accurate.
-let version = "0.0.7"
+/// Current Pigeon version 0.0.8. Necessary since SPM doesn't use dynamic libraries. Plus this will be more accurate.
+let version = "0.0.8"
 
 public typealias Messaging = Any
 public typealias Identifier = String
-public typealias ReplyHandler = (Messaging?) -> Void
-public typealias ReplyAction = (Messaging?) throws -> Void
-public typealias Listener = (Messaging?, @escaping ReplyAction) -> Void
+public typealias ReplyHandler = @Sendable (Messaging?) -> Void
+public typealias ReplyAction = @Sendable (Messaging?) throws -> Void
+public typealias Listener = @Sendable (Messaging?, @escaping ReplyAction) -> Void
 
-open class Pigeon {
-    public enum TransitingType {
+open class Pigeon: @unchecked Sendable {
+    public enum TransitingType: Sendable {
         case file
         case coordinatedFile
         @available(iOS 11.0, watchOS 4.0, *)
@@ -35,7 +34,7 @@ open class Pigeon {
         case sessionFile
     }
 
-    let darwinNotificationCenter = SCFNotificationCenter.darwinNotify
+    private let darwinNotificationCenter = SCFNotificationCenter.darwinNotify
 
     private var applicationGroupIdentifier: String
     private var optionalDirectory: String?

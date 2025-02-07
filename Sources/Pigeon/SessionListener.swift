@@ -12,7 +12,7 @@ import Foundation
 import WatchConnectivity
 
 @available(iOS 11.0, watchOS 4.0, *)
-open class SessionListener: NSObject {
+open class SessionListener: NSObject, @unchecked Sendable {
     public var shared = SessionListener()
     override private init() {
         super.init()

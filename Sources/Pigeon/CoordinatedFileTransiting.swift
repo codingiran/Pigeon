@@ -7,7 +7,7 @@
 
 import Foundation
 
-class CoordinatedFileTransiting: FileTransiting {
+class CoordinatedFileTransiting: FileTransiting, @unchecked Sendable {
     override func writeMessage(_ message: Messaging?, for identifier: Identifier) throws {
         guard let message, !identifier.isEmpty else { return }
         let data = try NSKeyedArchiver.archivedData(withRootObject: message, requiringSecureCoding: false)

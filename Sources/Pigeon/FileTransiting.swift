@@ -7,7 +7,7 @@
 
 import Foundation
 
-class FileTransiting: Transiting {
+class FileTransiting: Transiting, @unchecked Sendable {
     var optionalDirectory: String?
     var applicationGroupContainerURL: URL?
     let fileManager = FileManager.default

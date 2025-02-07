@@ -8,7 +8,7 @@
 import Foundation
 
 public extension Pigeon {
-    enum Error: LocalizedError {
+    enum Error: LocalizedError, Sendable {
         case applicationGroupIdentifierNotConfigured
         case messageIdentifierInvalid
         case sessionUnReachable

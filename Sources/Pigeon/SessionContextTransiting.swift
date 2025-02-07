@@ -12,7 +12,7 @@ import Foundation
 import WatchConnectivity
 
 @available(iOS 11.0, watchOS 4.0, *)
-class SessionContextTransiting: Transiting {
+class SessionContextTransiting: Transiting, @unchecked Sendable {
     private var session = WCSession.default
     private var lastContext: [String: Any]?
 

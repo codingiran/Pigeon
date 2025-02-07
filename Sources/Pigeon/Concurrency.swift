@@ -15,7 +15,7 @@ public extension Pigeon {
         .init(pigeon: self, identifier: identifier)
     }
 
-    final class Messages: AsyncSequence {
+    final class Messages: AsyncSequence, @unchecked Sendable {
         /// The kind of elements streamed.
         public typealias Message = (message: Messaging?, replyAction: ReplyAction)
         public typealias Element = Message

@@ -12,7 +12,7 @@ import Foundation
 import WatchConnectivity
 
 @available(iOS 11.0, watchOS 4.0, *)
-class SessionFileTransiting: FileTransiting {
+class SessionFileTransiting: FileTransiting, @unchecked Sendable {
     private let session = WCSession.default
 
     required init(applicationGroupIdentifier: String, optionalDirectory: String?) {

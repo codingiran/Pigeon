@@ -12,7 +12,7 @@ import Foundation
 import WatchConnectivity
 
 @available(iOS 11.0, watchOS 4.0, *)
-class SessionMessageTransiting: Transiting {
+class SessionMessageTransiting: Transiting, @unchecked Sendable {
     private var session = WCSession.default
 
     required init() {

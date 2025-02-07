@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol Transiting {
+public protocol Transiting: Sendable {
     func writeMessage(_ message: Messaging?, for identifier: Identifier) throws
     func message(for identifier: Identifier) throws -> Messaging?
     func deleteContent(for identifier: Identifier) throws
